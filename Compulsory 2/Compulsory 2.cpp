@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <ctime>
 #include <conio.h>
 
@@ -9,7 +10,7 @@ using namespace std;
 // Initializing functions
 void createDeck();
 void game();
-void drawCard();
+void drawCard(int offset, int chosenCard);
 
 // Setting ascii values for card suits
 const char hearts = 3;
@@ -28,6 +29,7 @@ struct Card {
 };
 
 vector <Card> deck(52);
+vector <vector <char>> cardPrint(6, vector <char>(200));
 
 int main()
 {
@@ -36,6 +38,11 @@ int main()
     bool quit{ false };
 
     do {
+        for (int i{ 0 }; i < 6; ++i) {
+            for (int j{ 0 }; j < 100; ++j) {
+                cardPrint[i][j] = ' ';
+            }
+        }
         createDeck();
         system("cls");
 
@@ -78,70 +85,102 @@ void game() {
     int playerMoney{ 100 };
     int houseMoney{ 100 };
     bool hold{ false };
-    vector <int>
-    
-    cout << ".--------.\n";
-    cout << "|   __   |\n";
-    cout << "|  |  |  |\n";
-    cout << "|    /   |\n";
-    cout << "|    .   |\n";
-    cout << ":--------:\n";
-    cout << "'--------'\n\n";
-
-    cout << "(D) to draw a card\n";
-    cout << "(H) to hold your hand\n";
+    int chosenCard{ 0 };
+    int cardsDrawn{ 0 };
 
     do {
-        char input = _getch();
-        switch (toupper(input)) {
-        case 'D':
-            drawCard();
-            break;
+        system("cls");
+        bool validInput{ false };
 
-        case 'H':
-            hold = true;
-            break;
+        cout << ".--------.\n";
+        cout << "|   __   |\n";
+        cout << "|  |  |  |\n";
+        cout << "|    /   |\n";
+        cout << "|    .   |\n";
+        cout << "|________|\n";
+        cout << "'--------'\n\n";
 
-        default:
-            break;
+        cout << "(D) to draw a card\n";
+        cout << "(H) to hold your hand\n";
+
+        if (cardsDrawn != 0) {
+            drawCard(cardsDrawn, chosenCard);
         }
+
+        do {
+            char input = _getch();
+            switch (toupper(input)) {
+            case 'D':
+                ++cardsDrawn;
+                validInput = true;
+                do {
+                    chosenCard = rand() % 52;
+                } while (deck[chosenCard].drawn == true);
+                break;
+
+            case 'H':
+                hold = true;
+                validInput = true;
+                break;
+
+            default:
+                break;
+            }
+        } while (!validInput);
     } while (!hold);
 }
 
-void drawCard() {
+void drawCard(int offset, int chosenCard) {
     string cardTop{ ".--------." };
     string cardBottom{ "'--------'" };
     string fillTop{ ".--.  |" };
     string fillBottom{ "|  '--'" };
-    int chosenCard{ 0 };
-
-    do {
-        chosenCard = rand() % 52;
-    } while (deck[chosenCard].drawn == true);
+    vector <int> playerCards(10);
+    vector <int> houseCards(10);
+    ostringstream line1;
+    ostringstream line2;
+    ostringstream line3;
+    ostringstream line4;
+    --offset;
+    offset *= 5;
 
     deck[chosenCard].drawn = true;
 
-    cout << cardTop << '\n';
-    cout << "|" << deck[chosenCard].name << deck[chosenCard].suit << fillTop << '\n';
+    line1 << "|" << deck[chosenCard].name << deck[chosenCard].suit << fillTop;
+    line4 << fillBottom << deck[chosenCard].name << deck[chosenCard].suit << "|";
 
     if (deck[chosenCard].suit == hearts) {
-        cout << "|  (\\/)  |\n";
-        cout << "|  :\\/:  |\n";
+        line2 << "|  (\\/)  |";
+        line3 << "|  :\\/:  |";
     }
     else if (deck[chosenCard].suit == diamonds) {
-        cout << "|  :/\\:  |\n";
-        cout << "|  :\\/:  |\n";
+        line2 << "|  :/\\:  |";
+        line3 << "|  :\\/:  |";
     }
     else if (deck[chosenCard].suit == clubs) {
-        cout << "|  :():  |\n";
-        cout << "|  ()()  |\n";
+        line2 << "|  :():  |";
+        line3 << "|  ()()  |";
     }
     else if (deck[chosenCard].suit == spades) {
-        cout << "|  :/\\:  |\n";
-        cout << "|  (__)  |\n";
+        line2 << "|  :/\\:  |";
+        line3 << "|  (__)  |";
     }
-    cout << fillBottom << deck[chosenCard].name << deck[chosenCard].suit << "|\n";
-    cout << cardBottom << '\n';
+
+    for (int j{ 0 }; j < 10; ++j) {
+        cardPrint[0][offset + j] = cardTop[j];
+        cardPrint[1][offset + j] = line1.str()[j];
+        cardPrint[2][offset + j] = line2.str()[j];
+        cardPrint[3][offset + j] = line3.str()[j];
+        cardPrint[4][offset + j] = line4.str()[j];
+        cardPrint[5][offset + j] = cardBottom[j];
+    }
+
+    for (int i{ 0 }; i < 6; ++i) {
+        for (int j{ 0 }; j < 100; ++j) {
+            cout << cardPrint[i][j];
+        }
+        cout << '\n';
+    }
 }
 
 void createDeck() {
