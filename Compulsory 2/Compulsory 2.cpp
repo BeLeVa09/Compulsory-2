@@ -188,7 +188,7 @@ void game() {
                     drawCard(cardsDrawn, chosenCard, 0, true);
 
                     Sleep(1250);
-                } while (housePoints <= playerPoints);
+                } while (housePoints < playerPoints);
 
                 if (housePoints > 21) {
                     cout << "\nPlayer Wins!\n";
