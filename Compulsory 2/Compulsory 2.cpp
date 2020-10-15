@@ -161,7 +161,7 @@ void game() {
         if (playerPoints > 21) {
             cout << "\n\nHouse wins!\n";
             cout << "You lost " << bet << "$\n";
-            houseMoney += bet;
+            houseMoney += pot;
             _getch();
             return;
         }
