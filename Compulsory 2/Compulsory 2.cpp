@@ -13,6 +13,13 @@ void createDeck();
 void game();
 void drawCard(int offset, int chosenCard, int player, bool bank);
 
+// Defining the colour values
+const int gold{ 14 };
+const int normal{ 7 };
+const int gray{ 8 };
+const int red{ 12 };
+const int green{ 10 };
+
 // Setting ascii values for card suits
 const char hearts = 3;
 const char diamonds = 4;
@@ -21,7 +28,7 @@ const char spades = 6;
 
 // I know global variables are evil, but this is the only way I got the money system to work properly
 int playerMoney{ 100 };
-int houseMoney{ 100 };
+int houseMoney{ 1000 };
 
 // Creating an object for every unique card
 struct Card {
@@ -36,6 +43,10 @@ struct Card {
 vector <Card> deck(52);
 vector <vector <char>> cardPrint(6, vector <char>(200));
 vector <vector <char>> aiCardPrint(6, vector <char>(200));
+
+void setColour(unsigned short colourValue) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colourValue);
+}
 
 int main()
 {
@@ -61,7 +72,8 @@ int main()
         cout << "\t\t\t\\____/|_|\\__,_|\\___|_|\\_\\____/\\___,_|\\___|_|\\_\\\n\n";
 
         cout << "\t\t\t\t\t    1. Play\n";
-        cout << "\t\t\t\t\t    2. Exit\n";
+        cout << "\t\t\t\t\t    2. Rules\n";
+        cout << "\t\t\t\t\t    3. Exit\n";
 
         char input = _getch();
 
@@ -71,6 +83,18 @@ int main()
             break;
 
         case '2':
+            system("cls");
+            cout << "\n\t\t\t  -------------------RULES-------------------\n";
+            cout << "\t\t\t              Minimum bet is 10$\n";
+            cout << "\t\t\t    Each card's value is its printed number\n";
+            cout << "\t\t\t  An Ace (A) is either 1 or 11 of your choice\n";
+            cout << "\t\t\t      T, J, Q and K are worth 10 points\n";
+            cout << "\t\t\t               Minimum bet is 5$\n";
+            cout << "\t\t\t  -------------------------------------------\n";
+            _getch();
+            break;
+
+        case '3':
             quit = true;
             break;
 
@@ -91,16 +115,26 @@ void game() {
     int bet{ 0 };
     int pot{ 0 };
 
+    if (playerMoney < 5) {
+        system("cls");
+        cout << "Looks like you played away all your money\n";
+        cout << "      Here, have some pity money:\n";
+        setColour(green);
+        cout << "--------------You gained 5$--------------\n";
+        playerMoney += 5;
+        _getch();
+    }
+
     do {
         system("cls");
-        cout << "Pay in starts at 10$\n";
+        cout << "Pay in starts at 5$\n";
         cout << "One cannot bet more than another player has\n";
         cout << "Your money: " << playerMoney << "$\n";
         cout << "House money: " << houseMoney << "$\n\n";
 
         cout << "Bet: ";
         cin >> bet;
-    } while (bet > houseMoney && bet > playerMoney);
+    } while (bet > houseMoney || bet > playerMoney || bet < 5);
 
     playerMoney -= bet;
     houseMoney -= bet;
@@ -110,10 +144,10 @@ void game() {
     system("cls");
 
     cout << ".--------.\n";
-    cout << "|   __   |\n";
-    cout << "|  |  |  |\n";
-    cout << "|    /   |\n";
-    cout << "|    .   |\n";
+    cout << "|   "; setColour(gold); cout << "__"; setColour(normal); cout << "   |\n";
+    cout << "|  "; setColour(gold); cout << "|  |"; setColour(normal); cout << "  |\n";
+    cout << "|    "; setColour(gold); cout << "/"; setColour(normal); cout << "   |\n";
+    cout << "|    "; setColour(gold); cout << "*"; setColour(normal); cout << "   |\n";
     cout << "'--------'\n";
 
     do { // ----------GAME LOOP----------
@@ -138,10 +172,10 @@ void game() {
             cout << "(H) to hold your hand\n\n";
             cout << "House Points: " << housePoints << "\n";
             cout << ".--------.\n";
-            cout << "|   __   |\n";
-            cout << "|  |  |  |\n";
-            cout << "|    /   |\n";
-            cout << "|    .   |\n";
+            cout << "|   "; setColour(gold); cout << "__"; setColour(normal); cout << "   |\n";
+            cout << "|  "; setColour(gold); cout << "|  |"; setColour(normal); cout << "  |\n";
+            cout << "|    "; setColour(gold); cout << "/"; setColour(normal); cout << "   |\n";
+            cout << "|    "; setColour(gold); cout << "*"; setColour(normal); cout << "   |\n";
             cout << "'--------'\n";
         }
 
@@ -154,7 +188,11 @@ void game() {
                     chosenCard = rand() % 52;
                 } while (deck[chosenCard].drawn == true);
                 if (deck[chosenCard].isAce == true) {
+                    setColour(green);
+                    cout << "\n---------------------------------------------------\n";
+                    cout << "You drew an Ace!\n";
                     cout << "Do you want the Ace to be of value 11 instead of 1?\n";
+                    setColour(normal);
                     cout << "1. Yes\n";
                     cout << "2. No\n";
                     char input = _getch();
@@ -219,8 +257,15 @@ void drawCard(int offset, int chosenCard, int player, bool bank) {
     ostringstream line2;
     ostringstream line3;
     ostringstream line4;
+    int colour{ 7 };
     --offset;
     offset *= 5;
+
+    if (deck[chosenCard].suit == hearts || deck[chosenCard].suit == diamonds) {
+        colour = red;
+    } else if (deck[chosenCard].suit == clubs || deck[chosenCard].suit == spades) {
+        colour = gray;
+    }
 
     deck[chosenCard].drawn = true;
 
